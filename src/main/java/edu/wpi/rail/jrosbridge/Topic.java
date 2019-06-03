@@ -24,6 +24,7 @@ public class Topic {
 	private boolean isSubscribed;
 	private final JRosbridge.CompressionType compression;
 	private final int throttleRate;
+	private final int queueLength;
 
 	// used to keep track of this object's callbacks
 	private final ArrayList<TopicCallback> callbacks;
@@ -95,6 +96,27 @@ public class Topic {
 	 */
 	public Topic(Ros ros, String name, String type,
 			JRosbridge.CompressionType compression, int throttleRate) {
+		this(ros, name, type, compression, throttleRate, 0);
+	}
+
+	/**
+	 * Create a ROS topic with the given information.
+	 *
+	 * @param ros
+	 *            A handle to the ROS connection.
+	 * @param name
+	 *            The name of the topic (e.g., "/cmd_vel").
+	 * @param type
+	 *            The message type (e.g., "std_msgs/String").
+	 * @param compression
+	 *            The type of compression used for this topic.
+	 * @param throttleRate
+	 *            The throttle rate to use for this topic.
+	 * @param queueLength
+	 *            The size of the queue to buffer messages.
+	 */
+	public Topic(Ros ros, String name, String type,
+				 JRosbridge.CompressionType compression, int throttleRate, int queueLength) {
 		this.ros = ros;
 		this.name = name;
 		this.type = type;
@@ -102,6 +124,7 @@ public class Topic {
 		this.isSubscribed = false;
 		this.compression = compression;
 		this.throttleRate = throttleRate;
+		this.queueLength = queueLength;
 		this.callbacks = new ArrayList<TopicCallback>();
 		this.ids = new ArrayList<String>();
 	}
@@ -161,6 +184,15 @@ public class Topic {
 	}
 
 	/**
+	 * Get the queue length for this topic.
+	 *
+	 * @return The queue length for this topic.
+	 */
+	public int getQueueLength() {
+		return this.queueLength;
+	}
+
+	/**
 	 * Get the throttle rate for this topic.
 	 * 
 	 * @return The throttle rate for this topic.
@@ -193,7 +225,9 @@ public class Topic {
 				.add(JRosbridge.FIELD_TYPE, this.type)
 				.add(JRosbridge.FIELD_TOPIC, this.name)
 				.add(JRosbridge.FIELD_COMPRESSION, this.compression.toString())
-				.add(JRosbridge.FIELD_THROTTLE_RATE, this.throttleRate).build();
+				.add(JRosbridge.FIELD_THROTTLE_RATE, this.throttleRate)
+				.add(JRosbridge.FIELD_QUEUE_LENGTH, this.queueLength)
+				.build();
 		this.ros.send(call);
 
 		// set the flag indicating we have subscribed
@@ -235,12 +269,14 @@ public class Topic {
 				.add(JRosbridge.FIELD_OP, JRosbridge.OP_CODE_ADVERTISE)
 				.add(JRosbridge.FIELD_ID, advertiseId)
 				.add(JRosbridge.FIELD_TYPE, this.type)
-				.add(JRosbridge.FIELD_TOPIC, this.name).build();
+				.add(JRosbridge.FIELD_TOPIC, this.name)
+				.build();
 		this.ros.send(call);
 
 		// set the flag indicating we are registered
 		this.isAdvertised = true;
 	}
+
 
 	/**
 	 * Unregister as a publisher for the topic.

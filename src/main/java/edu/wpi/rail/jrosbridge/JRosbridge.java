@@ -85,6 +85,11 @@ public class JRosbridge {
 	public static final String FIELD_THROTTLE_RATE = "throttle_rate";
 
 	/**
+	 * The queue length field for the rosbridge protocol.
+	 */
+	public static final String FIELD_QUEUE_LENGTH = "queue_length";
+
+	/**
 	 * The time field for the rosbridge protocol.
 	 */
 	public static final String FIELD_TIME = "t";
